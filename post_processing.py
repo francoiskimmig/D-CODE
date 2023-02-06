@@ -40,15 +40,39 @@ from collections import Counter
 #     return np.std(np.array(rmse_list)
 
 
+def generate_estimated_trajectory(dg, f_hat):
+    f_list = []
+    for i in range(2):
+        if i == 0:
+            f_list.append(f_hat.execute)
+        else:
+            f_list.append(ones_func)
+
+    ode_hat = equations.InferredODE(2, f_hat_list = f_list, T = dg.T)
+    dg_hat = data.DataGenerator(
+        ode_hat,
+        dg.T,
+        freq = dg.freq,
+        n_sample = 10, # Not very clear as to what it corresponds to.
+        noise_sigma = 0.0,
+        init_low = (0.99, 0.01),
+        init_high = (1.0, 0.0),
+    )
+
+    return dg_hat
+
+
 def set_unique_legend(axe):
     handles, labels = axe.get_legend_handles_labels()
     by_label = dict(zip(labels, handles))
     axe.legend(by_label.values(), by_label.keys())  
 
+
 def ones_func(x):
     return 1.0
 
-def error_display(output_path, model):
+
+def error_display(output_path, model, plot_type):
     dir_path = os.path.dirname(os.path.realpath(__file__))
     path_base = os.path.join(dir_path, "results/real/sample-80/dim-1/")
 
@@ -78,55 +102,36 @@ def error_display(output_path, model):
     f_sym_list = [x["f_hat"] for x in res_list]
     f_hat_list = [x["model"] for x in res_list]
     fitness_list = [x["model"].oob_fitness_ for x in res_list]
-    best_fit = fitness_list.index(min(fitness_list))
-
-    f_list = []
-    for i in range(2):
-        if i == 0:
-            f_list.append(f_hat_list[best_fit].execute)
-        else:
-            f_list.append(ones_func)
-
-
-    ode_hat = equations.InferredODE(2, f_hat_list=f_list, T=dg.T)
-    dg_hat = data.DataGenerator(
-        ode_hat,
-        dg.T,
-        freq=dg.freq,
-        n_sample=10,
-        noise_sigma=0.0,
-        init_low=(0.99, 0.01),
-        init_high=(1.0, 0.0),
-    )
-
-    time = np.arange(0, dg.T, 1 / (dg.freq + 1))
 
     fig1, ax1 = plt.subplots(1, 1)
     x_true = dg.yt_test[:, :, 0]
-    x_pred = dg_hat.xt[:, 0:1, 0]
-    ax1.plot(time, x_pred, c = "r", label = "estimated")
-    ax1.set_ylim(0, 1.1)
+    time = np.arange(0, dg.T, 1 / (dg.freq + 1))
     for i in range(x_true.shape[1]):
         ax1.scatter(time, x_true[:, i] , [4], c = "b", label = "data") # Note that [4] is the size of the markers.
-    fig1.suptitle("Estimated trajectory - ")
 
+    if plot_type == "best_fit":
+        best_fit_index = fitness_list.index(min(fitness_list))
+        dg_hat = generate_estimated_trajectory(dg, f_hat = f_hat_list[best_fit_index])
+        x_pred = dg_hat.xt[:, 0, 0]
+        ax1.plot(time, x_pred, c = "r", label = "estimated")
+
+    if plot_type == "every_seed":
+        best_fit_index = fitness_list.index(min(fitness_list))
+        for i in range(len(f_hat_list)):
+            dg_hat = generate_estimated_trajectory(dg, f_hat = f_hat_list[i])
+            x_pred = dg_hat.xt[:, 0, 0]
+            ax1.plot(time, x_pred, label = "estimated seed #" + str(i))
+
+    ax1.set_ylim(0, 1.1)
+    fig1.suptitle("Estimated trajectory - ")
     set_unique_legend(ax1)
 
-    plt.show()
 # mask = dg.mask_test
 
 # np.sqrt(np.sum((x_true - x_pred) ** 2 * mask) / np.sum(mask))
 # std_RMSE((x_true - x_pred) ** 2)
 
 if __name__ == '__main__':
-    error_display('ret', 'wetwe')
-
-
-
-
-
-
-
-
-
-# 
+    error_display('ret', 'wetwe', "best_fit")
+    error_display('ret', 'wetwe', "every_seed")
+    plt.show()
