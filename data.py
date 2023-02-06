@@ -87,7 +87,7 @@ class DataGeneratorFromFile:
         self.xt = self.yt.copy()
 
         self.yt_train = self.yt[:, :n_train, :].copy()
-        # self.yt_test = self.yt[:, n_train:, :].copy()
+        self.yt_test = self.yt[:, n_train:, :].copy()
         # yt[:, 1, 0] valeurs de x(t)
         # yt[:, 1, 1] valeurs de t 
         # self.mask_test = self.mask[:, n_train:].copy()
@@ -98,7 +98,7 @@ class DataGeneratorFromFile:
         self.T = 1.
         self.solver = equations.ODESolver(equations.RealODEPlaceHolder(), self.T, self.yt_train.shape[0]-1)
         # self.noise_sigma = 0.001
-        # self.freq = 364
+        self.freq = self.yt_train.shape[0]-1 # should it be self.yt_train.shape[0]-1?
 
     def generate_data(self):
         return self.yt_train
