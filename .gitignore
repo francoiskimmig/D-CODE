@@ -140,3 +140,9 @@ results*
 *.png
 *.csv
 nohup.out
+
+# macOS
+.DS_store
+
+# virtual environment
+venv_dcode

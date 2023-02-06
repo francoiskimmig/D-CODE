@@ -3,7 +3,7 @@ sympy==1.8
 scikit-learn
 scipy
 matplotlib
-numpy
+numpy==1.21
 pandas
 torch
 torchdiffeq
