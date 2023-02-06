@@ -7,14 +7,13 @@ from interpolate import num_diff
 import pickle
 import os
 import time
-import sys
-import json
 
-def run(dim_x, x_id, n_sample, alg, seed, n_seed, data_path):
+
+def run(dim_x, x_id, n_sample, alg, seed, n_seed):
     np.random.seed(999)
     ode_name = 'real'
 
-    dg = data.DataGeneratorFromFile(dim_x, n_sample, data_path)
+    dg = data.DataGeneratorReal(dim_x, n_sample)
 
     yt = dg.generate_data()
 
@@ -61,26 +60,9 @@ def run(dim_x, x_id, n_sample, alg, seed, n_seed, data_path):
 
         print(f_hat)
 
-def main(input_args): 
-    
-    # read options
-    if isinstance(input_args, dict):
-        args_key = list(input_args.keys())
-        for key in args_key:
-            input_args["--" + key] = input_args.pop(key)
 
-        args_str = json.dumps(input_args)
-        input_args = args_str.replace(":",",").replace("'","").replace('"',"").replace(" ","")[1:-1].split(',')
-
-    if isinstance(input_args, list) and (all(isinstance(s, str) for s in input_args)):
-        pass    
-        
-    else:
-        raise TypeError("""invalid argument type 
-            -> the argument must be a list of string or a dictionary""")
-
+if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument("--data_path", help="data file path", type=str, required=True)
     parser.add_argument("--dim_x", help="number of dimensions", type=int, default=2)
     parser.add_argument("--x_id", help="ID of the equation to be learned", type=int, default=0)
     parser.add_argument("--n_sample", help="number of trajectories", type=int, default=100)
@@ -88,11 +70,7 @@ def main(input_args):
     parser.add_argument("--seed", help="random seed", type=int, default=0)
     parser.add_argument("--n_seed", help="random seed", type=int, default=10)
 
-    args = parser.parse_args(input_args)
-
+    args = parser.parse_args()
     print('Running with: ', args)
 
-    run(args.dim_x, args.x_id, args.n_sample, args.alg, seed=args.seed, n_seed=args.n_seed, data_path=args.data_path)
-
-if __name__ == '__main__':
-    main(sys.argv[1:]) 
+    run(args.dim_x, args.x_id, args.n_sample, args.alg, seed=args.seed, n_seed=args.n_seed)

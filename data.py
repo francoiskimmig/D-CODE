@@ -49,7 +49,8 @@ class DataGeneratorReal:
 
         self.yt_train = self.yt[:, :n_train, :].copy()
         self.yt_test = self.yt[:, n_train:, :].copy()
-
+        # yt[:, 1, 0] valeurs de x(t)
+        # yt[:, 1, 1] valeurs de t 
         self.mask_test = self.mask[:, n_train:].copy()
 
         # self.T = y_total.shape[0] - 1
@@ -59,6 +60,45 @@ class DataGeneratorReal:
         self.solver = equations.ODESolver(equations.RealODEPlaceHolder(), self.T, 364)
         self.noise_sigma = 0.001
         self.freq = 364
+
+    def generate_data(self):
+        return self.yt_train
+
+class DataGeneratorFromFile:
+    def __init__(self, dim_x, n_train, data_path):
+
+        with open(data_path, 'rb') as f:
+            y_total = pickle.load(f)
+
+        # with open(mask_file_path, 'rb') as f:
+        #     mask = pickle.load(f)
+
+        if (n_train > y_total.shape[1]):
+            raise ValueError("the number of training data must be lower than the total number of data. "
+            + f"Current value, n_train: {n_train}, n_data: {y_total.shape[1]}")
+
+        if dim_x == 1:
+            self.yt = y_total[:, :, 0:1]
+        else:
+            self.yt = y_total
+
+        # self.mask = mask
+
+        self.xt = self.yt.copy()
+
+        self.yt_train = self.yt[:, :n_train, :].copy()
+        # self.yt_test = self.yt[:, n_train:, :].copy()
+        # yt[:, 1, 0] valeurs de x(t)
+        # yt[:, 1, 1] valeurs de t 
+        # self.mask_test = self.mask[:, n_train:].copy()
+
+        # self.T = y_total.shape[0] - 1
+        # self.solver = equations.ODESolver(equations.RealODEPlaceHolder(), self.T, 1.)
+
+        self.T = 1.
+        self.solver = equations.ODESolver(equations.RealODEPlaceHolder(), self.T, self.yt_train.shape[0]-1)
+        # self.noise_sigma = 0.001
+        # self.freq = 364
 
     def generate_data(self):
         return self.yt_train
