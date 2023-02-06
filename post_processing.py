@@ -56,7 +56,7 @@ def error_display(output_path, model):
     n_sample = 80
     data_path = os.path.join(dir_path, "../NeuralODE/Data/first_order_NL_power/data_default.pkl")
     seed_s = 0
-    seed_e = 2
+    seed_e = 5
     x_id = 0
 
     dg = data.DataGeneratorFromFile(dim_x, n_sample, data_path)
@@ -80,14 +80,13 @@ def error_display(output_path, model):
     fitness_list = [x["model"].oob_fitness_ for x in res_list]
     best_fit = fitness_list.index(min(fitness_list))
 
-    ind = 0
-
     f_list = []
     for i in range(2):
         if i == 0:
-            f_list.append(f_hat_list[ind].execute)
+            f_list.append(f_hat_list[best_fit].execute)
         else:
             f_list.append(ones_func)
+
 
     ode_hat = equations.InferredODE(2, f_hat_list=f_list, T=dg.T)
     dg_hat = data.DataGenerator(
@@ -108,7 +107,7 @@ def error_display(output_path, model):
     ax1.plot(time, x_pred, c = "r", label = "estimated")
     ax1.set_ylim(0, 1.1)
     for i in range(x_true.shape[1]):
-        ax1.scatter(time, x_true[:, i] , [4], c = "b", label = "data")
+        ax1.scatter(time, x_true[:, i] , [4], c = "b", label = "data") # Note that [4] is the size of the markers.
     fig1.suptitle("Estimated trajectory - ")
 
     set_unique_legend(ax1)
