@@ -1,3 +1,4 @@
+import os 
 import run_simulation_real as run
 import json
 
@@ -32,7 +33,8 @@ import json
 # n_seed = 5
 
 # option 6 -----------------------------------------------------------------------------------------
-data_path = "/Users/francois/Codes/NeuralODE/Data/first_order_NL_power/data_default.pkl"
+dir_path = os.path.dirname(os.path.realpath(__file__))
+data_path = os.path.join(dir_path, "../NeuralODE/Data/first_order_NL_power/data_default.pkl")
 dim_x = 1
 n_train = 80
 n_seed = 5

@@ -40,22 +40,26 @@ from collections import Counter
 #     return np.std(np.array(rmse_list)
 
 
+def set_unique_legend(axe):
+    handles, labels = axe.get_legend_handles_labels()
+    by_label = dict(zip(labels, handles))
+    axe.legend(by_label.values(), by_label.keys())  
+
 def ones_func(x):
     return 1.0
 
 def error_display(output_path, model):
-    path_base = "/Users/francois/Codes/VanderschaarLab/D-CODE/results/real/sample-80/dim-1/"
+    dir_path = os.path.dirname(os.path.realpath(__file__))
+    path_base = os.path.join(dir_path, "results/real/sample-80/dim-1/")
 
     dim_x = 1
     n_sample = 80
-    data_path = "/Users/francois/Codes/NeuralODE/Data/first_order_NL_power/data_default.pkl"
+    data_path = os.path.join(dir_path, "../NeuralODE/Data/first_order_NL_power/data_default.pkl")
     seed_s = 0
     seed_e = 2
     x_id = 0
 
     dg = data.DataGeneratorFromFile(dim_x, n_sample, data_path)
-
-    path = "/Users/francois/Codes/VanderschaarLab/D-CODE/results/real/sample-80/dim-1/grad_seed_4.pkl"
 
     res_list = []
     for s in range(seed_s, seed_e):
@@ -75,7 +79,6 @@ def error_display(output_path, model):
     f_hat_list = [x["model"] for x in res_list]
     fitness_list = [x["model"].oob_fitness_ for x in res_list]
     best_fit = fitness_list.index(min(fitness_list))
-    print(best_fit)
 
     ind = 0
 
@@ -97,19 +100,18 @@ def error_display(output_path, model):
         init_high=(1.0, 0.0),
     )
 
-    time = np.arange(0, dg.T, 1/(dg.freq+1))
+    time = np.arange(0, dg.T, 1 / (dg.freq + 1))
 
-    plt.plot(time, dg_hat.xt[:, 0, 0])
-    plt.ylim(0, 1.1)
-
+    fig1, ax1 = plt.subplots(1, 1)
     x_true = dg.yt_test[:, :, 0]
     x_pred = dg_hat.xt[:, 0:1, 0]
-
+    ax1.plot(time, x_pred, c = "r", label = "estimated")
+    ax1.set_ylim(0, 1.1)
     for i in range(x_true.shape[1]):
-        plt.scatter(time, x_true[:,i]) # TODO: all in the same color       
+        ax1.scatter(time, x_true[:, i] , [4], c = "b", label = "data")
+    fig1.suptitle("Estimated trajectory - ")
 
-    # plt.scatter(time, dg.yt_test[:, :, 1], x_true)
-    plt.plot(time, x_pred)
+    set_unique_legend(ax1)
 
     plt.show()
 # mask = dg.mask_test
