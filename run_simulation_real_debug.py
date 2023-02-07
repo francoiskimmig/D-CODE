@@ -59,5 +59,5 @@ if __name__ == "__main__":
 
     data_path = os.path.join(dir_path, "../NeuralODE/Data", input_params["model_name"], (input_params ["data_filename"] + ".pkl"))
 
-    args = {"data_path": data_path, "dim_x": input_params["dim_x"], "n_sample": input_params["n_train"], "n_seed": input_params["n_seed"]}
+    args = {"data_path": data_path, "dim_x": input_params["dim_x"], "n_sample": input_params["n_train"], "n_seed": input_params["n_seed"], "ode_name": input_params["ode_name"]}
     run.main(args)

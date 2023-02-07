@@ -10,15 +10,14 @@ import time
 import sys
 import json
 
-def run(dim_x, x_id, n_sample, alg, seed, n_seed, data_path):
+def run(dim_x, x_id, n_sample, alg, seed, n_seed, data_path, ode_name):
     np.random.seed(999)
-    ode_name = 'real'
 
     dg = data.DataGeneratorFromFile(dim_x, n_sample, data_path)
 
     yt = dg.generate_data()
-    print(dg.xt.shape)
-    print(dg.solver.t.shape)
+    # print(dg.xt.shape)
+    # print(dg.solver.t.shape)
 
     dxdt_hat = num_diff(yt, dg, alg)
     print('Numerical differentiation: Done.')
@@ -29,6 +28,7 @@ def run(dim_x, x_id, n_sample, alg, seed, n_seed, data_path):
     y_train = dxdt_hat[:, :, x_id].flatten()
     assert X_train.shape[0] == y_train.shape[0]
 
+    # TODO Add to input file algorithm choice
     if alg == 'tv':
         path_base = 'results/{}/sample-{}/dim-{}/'.format(ode_name, n_sample, dim_x)
     else:
@@ -89,12 +89,13 @@ def main(input_args):
     parser.add_argument("--alg", help="name of the benchmark", type=str, default='tv', choices=['tv', 'spline'])
     parser.add_argument("--seed", help="random seed", type=int, default=0)
     parser.add_argument("--n_seed", help="random seed", type=int, default=10)
+    parser.add_argument("--ode_name", help="ode name for output folder", type=str, default="real")
 
     args = parser.parse_args(input_args)
 
     print('Running with: ', args)
 
-    run(args.dim_x, args.x_id, args.n_sample, args.alg, seed=args.seed, n_seed=args.n_seed, data_path=args.data_path)
+    run(args.dim_x, args.x_id, args.n_sample, args.alg, seed=args.seed, n_seed=args.n_seed, data_path=args.data_path, ode_name=args.ode_name)
 
 if __name__ == '__main__':
     main(sys.argv[1:]) 

@@ -73,21 +73,21 @@ def ones_func(x):
     return 1.0
 
 
-def error_display(output_path, model, plot_type):
+def error_display(input_params):
     dir_path = os.path.dirname(os.path.realpath(__file__))
-    path_base = os.path.join(dir_path, "results/real/sample-80/dim-1/")
+    dim_x = input_params["dim_x"]
+    n_train = input_params["n_train"]
+    path_base = os.path.join(dir_path, "results/{}/sample-{}/dim-{}/".format(input_params["ode_name"], n_train, dim_x))
 
-    dim_x = 1
-    n_sample = 80
-    data_path = os.path.join(dir_path, "../NeuralODE/Data/first_order_NL_power/data_default.pkl")
-    seed_s = 0
-    seed_e = 50
+    data_path = os.path.join(dir_path, "../NeuralODE/Data", input_params["model_name"], (input_params ["data_filename"] + ".pkl"))
+    seed_start = 0
+    seed_end = input_params["n_seed"]
     x_id = 0
 
-    dg = data.DataGeneratorFromFile(dim_x, n_sample, data_path)
+    dg = data.DataGeneratorFromFile(dim_x, n_train, data_path)
 
     res_list = []
-    for s in range(seed_s, seed_e):
+    for s in range(seed_start, seed_end):
         if x_id == 0:
             path = path_base + "grad_seed_{}.pkl".format(s)
         else:
@@ -113,6 +113,7 @@ def error_display(output_path, model, plot_type):
     for i in range(x_true.shape[1]):
         ax1.scatter(time, x_true[:, i] , [4], c = "b", label = "data") # Note that [4] is the size of the markers.
 
+    plot_type = input_params["plot_type"]
     if plot_type == "best_fit":
         best_fit_index = fitness_list.index(min(fitness_list))
         dg_hat = generate_estimated_trajectory(dg, f_hat = f_hat_list[best_fit_index])
@@ -132,7 +133,7 @@ def error_display(output_path, model, plot_type):
             ax1.plot(time, x_pred, label = "estimated seed #" + str(i))
 
     ax1.set_ylim(0, 1.1)
-    fig1.suptitle("Estimated trajectory - ")
+    fig1.suptitle("Estimated trajectory - " + plot_type)
     set_unique_legend(ax1)
 
 # mask = dg.mask_test
@@ -163,8 +164,6 @@ if __name__ == '__main__':
     
     with open(json_file, 'r') as file:
         input_params = json.load(file)
-
         
-    error_display('ret', 'wetwe', "best_fit")
-    error_display('ret', 'wetwe', "every_seed")
-    # plt.show()
+    error_display(input_params)
+    plt.show()
