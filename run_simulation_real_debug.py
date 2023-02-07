@@ -1,6 +1,7 @@
 import os 
 import run_simulation_real as run
 import json
+import argparse
 
 # # option 1 -----------------------------------------------------------------------------------------
 # data_path = "/Users/francois/Codes/NeuralODE/Data/first_order/data_default.pkl"
@@ -32,15 +33,31 @@ import json
 # n_train = 80
 # n_seed = 5
 
-# option 6 -----------------------------------------------------------------------------------------
-dir_path = os.path.dirname(os.path.realpath(__file__))
-data_path = os.path.join(dir_path, "../NeuralODE/Data/first_order_NL_power/data_default.pkl")
-dim_x = 1
-n_train = 80
-n_seed = 5
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+      "--json_file",
+      "-i",
+      "--input",
+      help = "input parameter .json file",
+      type = str,
+      )
+  
+    args = parser.parse_args()
+    
+    json_file = args.json_file
+    dir_path = os.path.dirname(os.path.realpath(__file__))
+    
+    if not json_file:
+        json_file = os.path.join(dir_path, "../NeuralODE/Data/input_files/default.json")
 
+    if not json_file.endswith(".json"):
+        json_file += ".json"
+    
+    with open(json_file, 'r') as file:
+        input_params = json.load(file)
 
-# script -------------------------------------------------------------------------------------------
-args = {"data_path": data_path, "dim_x": dim_x, "n_sample": n_train, "n_seed": n_seed}
+    data_path = os.path.join(dir_path, "../NeuralODE/Data", input_params["model_name"], (input_params ["data_filename"] + ".pkl"))
 
-run.main(args)
+    args = {"data_path": data_path, "dim_x": input_params["dim_x"], "n_sample": input_params["n_train"], "n_seed": input_params["n_seed"]}
+    run.main(args)

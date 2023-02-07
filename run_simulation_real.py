@@ -17,6 +17,8 @@ def run(dim_x, x_id, n_sample, alg, seed, n_seed, data_path):
     dg = data.DataGeneratorFromFile(dim_x, n_sample, data_path)
 
     yt = dg.generate_data()
+    print(dg.xt.shape)
+    print(dg.solver.t.shape)
 
     dxdt_hat = num_diff(yt, dg, alg)
     print('Numerical differentiation: Done.')

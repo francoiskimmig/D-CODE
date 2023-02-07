@@ -4,6 +4,7 @@ import os
 import time
 import matplotlib.pyplot as plt
 import numpy as np
+import json
 
 import data
 import equations
@@ -80,7 +81,7 @@ def error_display(output_path, model, plot_type):
     n_sample = 80
     data_path = os.path.join(dir_path, "../NeuralODE/Data/first_order_NL_power/data_default.pkl")
     seed_s = 0
-    seed_e = 5
+    seed_e = 50
     x_id = 0
 
     dg = data.DataGeneratorFromFile(dim_x, n_sample, data_path)
@@ -103,6 +104,9 @@ def error_display(output_path, model, plot_type):
     f_hat_list = [x["model"] for x in res_list]
     fitness_list = [x["model"].oob_fitness_ for x in res_list]
 
+    testo = res_list[0]
+    print(testo["model"].__dict__.keys())
+
     fig1, ax1 = plt.subplots(1, 1)
     x_true = dg.yt_test[:, :, 0]
     time = np.arange(0, dg.T, 1 / (dg.freq + 1))
@@ -113,7 +117,12 @@ def error_display(output_path, model, plot_type):
         best_fit_index = fitness_list.index(min(fitness_list))
         dg_hat = generate_estimated_trajectory(dg, f_hat = f_hat_list[best_fit_index])
         x_pred = dg_hat.xt[:, 0, 0]
-        ax1.plot(time, x_pred, c = "r", label = "estimated")
+        ax1.plot(time, x_pred, c = "r", label = "best fit estimated")
+        worst_fit_index = fitness_list.index(max(fitness_list))
+        dg_hat = generate_estimated_trajectory(dg, f_hat = f_hat_list[worst_fit_index])
+        x_pred = dg_hat.xt[:, 0, 0]
+        ax1.plot(time, x_pred, c = "g", label = "worst fit estimated")
+
 
     if plot_type == "every_seed":
         best_fit_index = fitness_list.index(min(fitness_list))
@@ -132,6 +141,30 @@ def error_display(output_path, model, plot_type):
 # std_RMSE((x_true - x_pred) ** 2)
 
 if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+      "--json_file",
+      "-i",
+      "--input",
+      help = "input parameter .json file",
+      type = str,
+      )
+  
+    args = parser.parse_args()
+    
+    json_file = args.json_file
+    dir_path = os.path.dirname(os.path.realpath(__file__))
+    
+    if not json_file:
+        json_file = os.path.join(dir_path, "../NeuralODE/Data/input_files/default.json")
+
+    if not json_file.endswith(".json"):
+        json_file += ".json"
+    
+    with open(json_file, 'r') as file:
+        input_params = json.load(file)
+
+        
     error_display('ret', 'wetwe', "best_fit")
     error_display('ret', 'wetwe', "every_seed")
-    plt.show()
+    # plt.show()
