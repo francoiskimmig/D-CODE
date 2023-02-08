@@ -16,8 +16,6 @@ def run(dim_x, x_id, n_sample, alg, seed, n_seed, data_path, ode_name):
     dg = data.DataGeneratorFromFile(dim_x, n_sample, data_path)
 
     yt = dg.generate_data()
-    # print(dg.xt.shape)
-    # print(dg.solver.t.shape)
 
     dxdt_hat = num_diff(yt, dg, alg)
     print('Numerical differentiation: Done.')
@@ -42,7 +40,6 @@ def run(dim_x, x_id, n_sample, alg, seed, n_seed, data_path, ode_name):
         print('Running with seed {}'.format(s))
         start = time.time()
         f_hat, est_gp = run_gp_real(X_train, y_train, x_id, s)
-        print(f_hat)
 
         if x_id == 0:
             path = path_base + 'grad_seed_{}.pkl'.format(s)
@@ -60,8 +57,6 @@ def run(dim_x, x_id, n_sample, alg, seed, n_seed, data_path, ode_name):
                 'dg': dg,
                 'time': end-start,
             }, f)
-
-        print(f_hat)
 
 def main(input_args): 
     

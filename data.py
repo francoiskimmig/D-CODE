@@ -96,7 +96,7 @@ class DataGeneratorFromFile:
         # self.solver = equations.ODESolver(equations.RealODEPlaceHolder(), self.T, 1.)
         # print(self.yt_train.shape[0]-1)
         self.T = 1.
-        self.solver = equations.ODESolver(equations.RealODEPlaceHolder(), self.T, self.yt_train.shape[0]) #fix the size to be consistent with data generation
+        self.solver = equations.ODESolver(equations.RealODEPlaceHolder(), self.T, self.yt_train.shape[0] - 1)
         # self.noise_sigma = 0.001
         self.freq = self.yt_train.shape[0]-1 # should it be self.yt_train.shape[0]-1?
 

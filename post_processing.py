@@ -41,6 +41,43 @@ from collections import Counter
 #     return np.std(np.array(rmse_list)
 
 
+def my_gp_to_pysym_with_coef(f_star, ode, tol=None, tol2=None, expand=False):
+    VarDict = ode.get_var_dict()
+    f_star_list, var_list, coef_list = parse_program_to_list(f_star.program)
+    f_star_infix = generator.Generator.prefix_to_infix(f_star_list, variables=var_list, coefficients=coef_list)
+    f_star_infix2 = f_star_infix.replace('{', '').replace('}', '')
+    if f_star_infix2 == f_star_infix:
+        f_star_sympy = generator.Generator.infix_to_sympy(f_star_infix, VarDict, "simplify")
+        return f_star_sympy
+
+    f_star_sympy = generator.Generator.infix_to_sympy(f_star_infix2, VarDict, "simplify")
+
+    if expand:
+        f_star_sympy = sympy.expand(f_star_sympy)
+
+    fs = str(f_star_sympy)
+    out_with_coefs = fs
+
+    fs = mask_X(fs)
+    if tol is None:
+        fs = re.sub(r'([0-9]*\.[0-9]+|[0-9]+)', 'C', fs)
+    else:
+        consts = re.findall(r'([0-9]*\.[0-9]+|[0-9]+)', fs)
+        for const in consts:
+            if const in ('1', '2', '3', '4', '5', '6', '7', '8', '9'):
+                continue
+            if (float(const) < 1 + tol) and (float(const) > 1 - tol):
+                fs = fs.replace(const, '1')
+            elif (tol2 is not None) and (float(const) < tol2) and (float(const) > -1 * tol2):
+                fs = fs.replace(const, '0')
+            else:
+                fs = fs.replace(const, f"{float(const):.5f}")
+
+    fs = back_X(fs)
+    f_star_sympy = generator.Generator.infix_to_sympy(fs, VarDict, "simplify")
+    return out_with_coefs, str(f_star_sympy)
+
+
 def generate_estimated_trajectory(dg, f_hat):
     f_list = []
     for i in range(2):
@@ -59,8 +96,15 @@ def generate_estimated_trajectory(dg, f_hat):
         init_low = (0.99, 0.01),
         init_high = (1.0, 0.0),
     )
-
     return dg_hat
+
+
+def get_values_and_analytical_form(dg, f_hat):
+    ode = equations.RealODEPlaceHolder()
+    [_, f_analytic] = my_gp_to_pysym_with_coef(f_hat, ode, tol=0.05, expand=True)
+    dg_hat = generate_estimated_trajectory(dg, f_hat = f_hat)
+    x_pred = dg_hat.xt[:, 0, 0]
+    return [x_pred, f_analytic]
 
 
 def set_unique_legend(axe):
@@ -104,36 +148,30 @@ def error_display(input_params):
     f_hat_list = [x["model"] for x in res_list]
     fitness_list = [x["model"].oob_fitness_ for x in res_list]
 
-    testo = res_list[0]
-    print(testo["model"].__dict__.keys())
-
     fig1, ax1 = plt.subplots(1, 1)
     x_true = dg.yt_test[:, :, 0]
-    time = np.arange(0, dg.T, 1 / (dg.freq + 1))
+    time = np.arange(0, dg.T + 1 / dg.freq, 1 /(dg.freq))
+
     for i in range(x_true.shape[1]):
         ax1.scatter(time, x_true[:, i] , [4], c = "b", label = "data") # Note that [4] is the size of the markers.
 
     plot_type = input_params["plot_type"]
     if plot_type == "best_fit":
         best_fit_index = fitness_list.index(min(fitness_list))
-        dg_hat = generate_estimated_trajectory(dg, f_hat = f_hat_list[best_fit_index])
-        x_pred = dg_hat.xt[:, 0, 0]
-        ax1.plot(time, x_pred, c = "r", label = "best fit estimated")
+        [x_pred, f_analytic] = get_values_and_analytical_form(dg, f_hat_list[best_fit_index])
+        ax1.plot(time, x_pred, c = "r", label = "best fit estimated: " + f_analytic)
+        
         worst_fit_index = fitness_list.index(max(fitness_list))
-        dg_hat = generate_estimated_trajectory(dg, f_hat = f_hat_list[worst_fit_index])
-        x_pred = dg_hat.xt[:, 0, 0]
-        ax1.plot(time, x_pred, c = "g", label = "worst fit estimated")
+        [x_pred, f_analytic] = get_values_and_analytical_form(dg, f_hat_list[worst_fit_index])
+        ax1.plot(time, x_pred, c = "g", label = "worst fit estimated: " + f_analytic)
 
-
-    if plot_type == "every_seed":
+    if plot_type == "every_fit":
         best_fit_index = fitness_list.index(min(fitness_list))
         for i in range(len(f_hat_list)):
-            dg_hat = generate_estimated_trajectory(dg, f_hat = f_hat_list[i])
-            x_pred = dg_hat.xt[:, 0, 0]
-            ax1.plot(time, x_pred, label = "estimated seed #" + str(i))
-
+            [x_pred, f_analytic] = get_values_and_analytical_form(dg, f_hat_list[i])
+            ax1.plot(time, x_pred, label = "estimated seed #" + str(i) +  ": " + f_analytic)
     ax1.set_ylim(0, 1.1)
-    fig1.suptitle("Estimated trajectory - " + plot_type)
+    fig1.suptitle("Estimated trajectory - Noise level: " + str(input_params["noise_level"]) + " - " + plot_type)
     set_unique_legend(ax1)
 
 # mask = dg.mask_test

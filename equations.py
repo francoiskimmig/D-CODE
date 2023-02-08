@@ -141,7 +141,7 @@ class ODESolver:
         n_step = int(T * freq)
         self.n_step = n_step
         self.dt = 1 / freq
-        self.t = np.arange(0, T + 0*self.dt, self.dt)
+        self.t = np.arange(0, T + self.dt, self.dt)
         self.return_list = return_list
 
     def solve_one(self, init):
