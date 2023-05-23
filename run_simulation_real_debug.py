@@ -57,7 +57,11 @@ if __name__ == "__main__":
     with open(json_file, 'r') as file:
         input_params = json.load(file)
 
-    data_path = os.path.join(dir_path, "../NeuralODE/Data", input_params["model_name"], (input_params ["data_filename"] + ".pkl"))
+    config = input_params["config"]
+    config["const_range"] = tuple(config["const_range"])
+    config["init_depth"] = tuple(config["init_depth"])
 
-    args = {"data_path": data_path, "dim_x": input_params["dim_x"], "n_sample": input_params["n_train"], "n_seed": input_params["n_seed"], "ode_name": input_params["ode_name"]}
+    data_path = os.path.join(dir_path, "../NeuralODE/Data", input_params["model_name"], (input_params ["data_filename"] + ".pkl"))
+    args = {"data_path": data_path, "dim_x": input_params["dim_x"], "n_sample": input_params["n_train"], "n_seed": input_params["n_seed"],
+         "ode_name": input_params["model_name"], "data_filename": input_params["data_filename"], "config": config}
     run.main(args)

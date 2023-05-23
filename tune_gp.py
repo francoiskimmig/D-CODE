@@ -28,9 +28,9 @@ def get_grid():
     # function_set['sub'] = np.random.choice(p_sub)
     function_set['mul'] = np.random.choice(p_mul)
     # function_set['div'] = np.random.choice(p_div)
-    function_set['log'] = 1
+    # function_set['log'] = 1
     # function_set['neg'] = 1
-    # function_set['cos'] = 1
+    function_set['cos'] = 1
 
     if np.random.uniform() < 0.5:
         function_set = {

@@ -20,7 +20,8 @@ class DataGenerator:
             for high, low in zip(init_high, init_low):
                 tmp.append(np.random.uniform(low, high, (n_sample, 1)))
             self.init_cond = np.concatenate(tmp, axis=-1)
-
+        self.init_cond = [[1, 0]] 
+        print(self.init_cond)
         self.xt = self.solver.solve(self.init_cond)
         if not self.return_list:
             self.eps = np.random.randn(*self.xt.shape) * noise_sigma
@@ -68,7 +69,12 @@ class DataGeneratorFromFile:
     def __init__(self, dim_x, n_train, data_path):
 
         with open(data_path, 'rb') as f:
-            y_total = pickle.load(f)
+            data_dict = pickle.load(f)
+        
+        y_total = data_dict["data"]
+
+        print("@DataGeneratorFromFile constructor")
+        print("y_total: ", y_total.shape)
 
         # with open(mask_file_path, 'rb') as f:
         #     mask = pickle.load(f)
@@ -97,8 +103,35 @@ class DataGeneratorFromFile:
         # print(self.yt_train.shape[0]-1)
         self.T = 1.
         self.solver = equations.ODESolver(equations.RealODEPlaceHolder(), self.T, self.yt_train.shape[0] - 1)
-        # self.noise_sigma = 0.001
+        self.noise_sigma = data_dict["noise"]
         self.freq = self.yt_train.shape[0]-1 # should it be self.yt_train.shape[0]-1?
 
     def generate_data(self):
         return self.yt_train
+
+class DataGeneratorForOutput:
+    def __init__(self, ode, T, freq, n_sample, noise_sigma, init_cond=[[1., 0.]] , return_list=False):
+        self.ode = ode
+        self.T = T
+        self.freq = freq
+        self.noise_sigma = noise_sigma
+        self.solver = equations.ODESolver(ode, T, freq, return_list=return_list)
+        self.return_list = return_list
+
+        # if isinstance(init_high, float) or isinstance(init_high, int):
+        #     self.init_cond = np.random.uniform(init_low, init_high, (n_sample, ode.dim_x))
+        # else:
+        #     # list of numbers
+        #     assert len(init_high) == ode.dim_x
+        #     tmp = list()
+        #     for high, low in zip(init_high, init_low):
+        #         tmp.append(np.random.uniform(low, high, (n_sample, 1)))
+        self.init_cond = init_cond
+
+        self.xt = self.solver.solve(self.init_cond)
+        if not self.return_list:
+            self.eps = np.random.randn(*self.xt.shape) * noise_sigma
+            self.yt = self.xt + self.eps
+
+    def generate_data(self):
+        return self.yt

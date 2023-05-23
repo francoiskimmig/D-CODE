@@ -489,11 +489,18 @@ class _Program(object):
         y_hat_long = self.execute(x_hat_long)
         # T, B
         y_hat = y_hat_long.reshape((T, B))
+        # print("x_hat is ", x_hat.shape)
+        # print("x_hat_long is ", x_hat_long.shape)
+        # print("y_hat is ", y_hat.shape)
+        # print("y_hat_long is ", y_hat_long.shape)
 
         c_hat = (y_hat * integration_weights[:, None]).T @ g
 
         e1 = np.sum((c + c_hat) ** 2 * sample_weight[:, None]) / np.sum(sample_weight)
         e2 = np.sum((c + c_hat) ** 2 * sample_weight2[:, None]) / np.sum(sample_weight2)
+
+        # print("e1: ", e1)
+        # print("e2: ", e2)
 
         return e1, e2
 

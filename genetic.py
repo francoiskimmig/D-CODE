@@ -493,7 +493,8 @@ class SymbolicODE(BaseEstimator):
                 if step_to_prev > PATIENCE:
                     # percentage improvement over the best
                     improvement_pct = (current_score - min(prev_scores)) / min(prev_scores)
-                    if improvement_pct >= -1 * self.stopping_criteria:
+                    if improvement_pct >= -1 * self.stopping_criteria and improvement_pct < 0:
+                        print("EARLY CONVERGENCE DUE TO {:.5%}".format(improvement_pct)  + " IMPROVEMENT OVER PREVIOUS BEST.")
                         break
 
         # Find the best individual in the final generation

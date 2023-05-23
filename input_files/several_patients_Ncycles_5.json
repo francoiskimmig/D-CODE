@@ -1,0 +1,42 @@
+{
+    "symbolic_model": "dcode",
+    "data_filename" : "ppg_press_press_dot_18_39_65_76_Ncycles_5",
+
+    "model_name" : "real_data",
+    "model_param" : [-4, 2], 
+    "initial_condition" : [1, 0],
+    "noise_level" : 0.0,
+
+    "n_time_sample" : 300, 
+    "n_time_series" : 200,
+
+    "do_display_data" : true,
+    "do_rescale" : false,
+    "do_random_time_sampling" : false,
+    
+    "dim_x" : 3,
+    "target_dimension": 1,
+    "n_train" : 1600,
+    "n_seed" : 30,
+
+    "plot_type": "best_fit",
+    "figure_title": "real data, noise: 0.0, sampling: 300",
+    "n_trajectories_plots": 5,
+
+    "config" : {"population_size": 15000,
+                "p_crossover": 0.6903,
+                "p_subtree_mutation": 0.133,
+                "p_hoist_mutation": 0.0361,
+                "p_point_mutation": 0.0905,
+                "function_set": {"neg": 1, "mul": 1, "add": 1, "cos": 1, "sin": 1},
+                "const_range": [0, 10],
+                "generations": 30,
+                "stopping_criteria": 0.01,
+                "max_samples": 0.9,
+                "verbose": 1,
+                "parsimony_coefficient": 1.0,
+                "init_depth": [1, 6],
+                "n_jobs": 2,
+                "low_memory": true
+                }
+}

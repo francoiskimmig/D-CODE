@@ -112,6 +112,7 @@ pow3 = make_function(lambda x: x ** 3, 'pow3', 1)
 
 def run_gp(X_train, y_train, ode, x_id=0, seed=0):
     config = get_config(ode, x_id)
+   
 
     est_gp = SymbolicRegressor(random_state=seed, **config)
     est_gp.fit(X_train, y_train)
@@ -129,9 +130,11 @@ def run_gp(X_train, y_train, ode, x_id=0, seed=0):
     return a, est_gp
 
 
-def run_gp_real(X_train, y_train, x_id=0, seed=0):
-    config = get_config_real(x_id)
+def run_gp_real(X_train, y_train, config, seed=0):
+    # config = get_config_real(x_id)
+    # print(config)
     ode = equations.RealODEPlaceHolder()
+
     est_gp = SymbolicRegressor(random_state=seed, **config)
     est_gp.fit(X_train, y_train)
     print(est_gp._program)
@@ -139,11 +142,11 @@ def run_gp_real(X_train, y_train, x_id=0, seed=0):
     return a, est_gp
 
 
-def run_gp_ode(ode_data, X_train, y_train, ode, x_id=0, seed=0):
-    if ode.name != 'real':
-        config = get_config(ode, x_id)
-    else:
-        config = get_config_real()
+def run_gp_ode(ode_data, X_train, y_train, ode, config, seed=0):
+    # if ode.name != 'real':
+    #     config = get_config(ode, x_id)
+    # else:
+    #     config = get_config_real()
 
     est_gp = SymbolicODE(random_state=seed, **config)
 

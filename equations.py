@@ -165,11 +165,14 @@ class ODESolver:
         # print({arr.shape for arr in res_list})
         if not self.return_list:
             res = np.stack(res_list, axis=0).transpose((2, 0, 1))
+            # print(res_list)
+            # print(res.shape)
             res_t = res.shape[0]
             true_t = len(self.t)
-            if res_t > true_t:
-                res = res[(res_t - true_t):, ...]
-            return res
+            # if res_t > true_t:
+            #     res = res[(res_t - true_t):, ...]
+            # print(res[0])
+            return res[:-1]
         else:
             return res_list
 

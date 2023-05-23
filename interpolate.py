@@ -5,7 +5,7 @@ from sklearn.linear_model import LassoCV
 from scipy.linalg import lstsq
 from tvregdiff.tvregdiff import TVRegDiff
 import gppca
-from config import get_interpolation_config
+from config import get_interpolation_config, real_interp_config
 from integrate import generate_grid
 from derivative import dxdt
 
@@ -21,7 +21,8 @@ def get_ode_data_noise_free(yt, x_id, dg, ode):
     weight = weight / weight.sum() * dg.T
 
     X_sample = yt
-    config = get_interpolation_config(ode, 0)
+    # config = get_interpolation_config(ode, 0)
+    config = real_interp_config # Quick fix but we will need to have this in the input as well.
     n_basis = config['n_basis']
     basis = config['basis']
 
@@ -33,6 +34,7 @@ def get_ode_data_noise_free(yt, x_id, dg, ode):
     Xi = X_sample[:, :, x_id]
 
     c = (Xi * weight[:, None]).T @ g_dot
+
     ode_data = {
         'x_hat': X_sample,
         'g': g,
@@ -50,7 +52,11 @@ def get_ode_data(yt, x_id, dg, ode, config_n_basis=None, config_basis=None):
     noise_sigma = dg.noise_sigma
     freq = dg.freq
 
+    print("@get_ode_data")
+    print("yt shape", yt.shape)
+
     if noise_sigma == 0:
+        print("***** NOISELESS DATA *****")
         return get_ode_data_noise_free(yt, x_id, dg, ode)
 
     X_sample_list = list()
@@ -58,7 +64,7 @@ def get_ode_data(yt, x_id, dg, ode, config_n_basis=None, config_basis=None):
     # for each dimension
     assert yt.shape[-1] > 0
     for d in range(yt.shape[-1]):
-        config = get_interpolation_config(ode, d)
+        config = real_interp_config # Quick fix but we will need to have this in the input as well.
         Y = yt[:, :, d]
         r = config['r']
         if r < 0:
@@ -83,7 +89,7 @@ def get_ode_data(yt, x_id, dg, ode, config_n_basis=None, config_basis=None):
     # check smaller than zero
     if ode.positive:
         X_sample[X_sample <= 1e-6] = 1e-6
-    config = get_interpolation_config(ode, x_id)
+    config = real_interp_config # Quick fix but we will need to have this in the input as well.
     if config_n_basis is None:
         n_basis = config['n_basis']
     else:
